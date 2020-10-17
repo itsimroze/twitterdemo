@@ -47,37 +47,35 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
     PathPattern.PathRemainingMatchInfo pathRemainingMatchInfo =
         pathPattern.matchStartOfPath(request.getPath().pathWithinApplication());
 
-    if (authHeader != null ) {
+    if (authHeader != null) {
 
-        try{
-          jwtUtil.getEmail(authHeader);
-        }
-        catch (ExpiredJwtException e) {
-          return userDataRepository
-              .findUserDataByEmail(e.getClaims().get("email").toString())
-              .filter(userData -> userData.getSessionStatus().equals(SessionStatus.ACTIVE))
-              .switchIfEmpty(
-                  Mono.error(
-                      () ->
-                          new ResponseStatusException(
-                              HttpStatus.UNAUTHORIZED,
-                              "Your session has been expired!",
-                              new TwitterDemoUnauthorizedException())))
-              .flatMap(
-                  userData -> {
-                    userData.setSessionStatus(SessionStatus.INACTIVE);
-                    return userDataRepository.save(userData);
-                  })
-              .flatMap(
-                  userData ->
-                      Mono.error(
-                          () ->
-                              new ResponseStatusException(
-                                  HttpStatus.UNAUTHORIZED,
-                                  "Your session has been expired!",
-                                  new TwitterDemoUnauthorizedException())));
-        }
-
+      try {
+        jwtUtil.getEmail(authHeader);
+      } catch (ExpiredJwtException e) {
+        return userDataRepository
+            .findUserDataByEmail(e.getClaims().get("email").toString())
+            .filter(userData -> userData.getSessionStatus().equals(SessionStatus.ACTIVE))
+            .switchIfEmpty(
+                Mono.error(
+                    () ->
+                        new ResponseStatusException(
+                            HttpStatus.UNAUTHORIZED,
+                            "Your session has been expired!",
+                            new TwitterDemoUnauthorizedException())))
+            .flatMap(
+                userData -> {
+                  userData.setSessionStatus(SessionStatus.INACTIVE);
+                  return userDataRepository.save(userData);
+                })
+            .flatMap(
+                userData ->
+                    Mono.error(
+                        () ->
+                            new ResponseStatusException(
+                                HttpStatus.UNAUTHORIZED,
+                                "Your session has been expired!",
+                                new TwitterDemoUnauthorizedException())));
+      }
 
       if (pathRemainingMatchInfo != null
           && pathRemainingMatchInfo.getPathRemaining() != null
@@ -89,31 +87,31 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
           swe.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
           return Mono.error(
               () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid Session!"));
-        }
-        else {
+        } else {
           Authentication auth = new UsernamePasswordAuthenticationToken(authHeader, authHeader);
 
           return userDataRepository
-            .findById(userName)
-            .switchIfEmpty(
-                Mono.error(
-                    new TwitterDemoNotFoundException(new RuntimeException(), "User doesn't exist")))
-            .filter(userData -> userData.getSessionStatus().name().equals(SessionStatus.ACTIVE.name()))
-            .switchIfEmpty(
-                Mono.error(
-                    new TwitterDemoUnauthorizedException(
-                        new RuntimeException(), "You've logged out!")))
-            .flatMap(userData -> authenticationManager
-              .authenticate(auth)
-              .map(authentication -> new SecurityContextImpl(authentication)));
-
-          /*return authenticationManager
-              .authenticate(auth)
-              .map(authentication -> new SecurityContextImpl(authentication));*/
+              .findById(userName)
+              .switchIfEmpty(
+                  Mono.error(
+                      () ->
+                          new ResponseStatusException(
+                              HttpStatus.UNAUTHORIZED, "User doesn't exist!")))
+              .filter(
+                  userData ->
+                      userData.getSessionStatus().name().equals(SessionStatus.ACTIVE.name()))
+              .switchIfEmpty(
+                  Mono.error(
+                      () ->
+                          new ResponseStatusException(
+                              HttpStatus.UNAUTHORIZED, "You've logged out!")))
+              .flatMap(
+                  userData ->
+                      authenticationManager.authenticate(auth).map(SecurityContextImpl::new));
         }
-      }
-      else {
-        return Mono.error(TwitterDemoUnauthorizedException::new);
+      } else {
+        return Mono.error(
+            () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Access denied!"));
       }
 
     } else {
