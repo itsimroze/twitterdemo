@@ -44,6 +44,7 @@ public class UserController {
   }
 
   @GetMapping("/{username}/follow")
+  @PreAuthorize("hasRole('USER')")
   public Mono<HashMap<String, FollowStatus>> getFollowList(@PathVariable("username") String username) {
     return userService.getFollower(username);
   }

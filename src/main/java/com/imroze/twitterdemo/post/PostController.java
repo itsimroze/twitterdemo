@@ -30,6 +30,7 @@ public class PostController {
   }
 
   @PutMapping("/{username}/post/{postId}/like")
+  @PreAuthorize("hasRole('USER')")
   public Mono<String> likePost(
       @PathVariable("username") String username,
       @PathVariable("postId") String postId,
@@ -38,6 +39,7 @@ public class PostController {
   }
 
   @PutMapping("/{username}/post/{postId}/comment")
+  @PreAuthorize("hasRole('USER')")
   public Mono<String> likePost(
       @PathVariable("username") String username,
       @PathVariable("postId") String postId,
@@ -46,6 +48,7 @@ public class PostController {
   }
 
   @PutMapping("/{username}/post/{postId}/comment/{commentId}/like")
+  @PreAuthorize("hasRole('USER')")
   public Mono<String> likeComment(
       @PathVariable("username") String username,
       @PathVariable("postId") String postId,
@@ -55,6 +58,7 @@ public class PostController {
   }
 
   @GetMapping("/{username}/post/{postId}")
+  @PreAuthorize("hasRole('USER')")
   public Mono<Post> getPost(@PathVariable("postId") String postId) {
     return postService.getPost(postId);
   }
