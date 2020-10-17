@@ -16,7 +16,7 @@ public class JWTUtil implements Serializable {
 
   private static final String secret =
       "ThisIsSecretForJWTHS512SignatureAlgorithmThatMUSTHave512bitsKeySize";
-  public static final Long expirationTime = 2L; // 86400L; // in second
+  public static final Long expirationTime = 86400L; // in second
 
   public String generateToken(Role role, String userName, String email, String number) {
 

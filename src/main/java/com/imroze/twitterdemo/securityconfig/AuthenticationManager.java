@@ -1,7 +1,10 @@
 package com.imroze.twitterdemo.securityconfig;
 
+import com.imroze.twitterdemo.exceptions.TwitterDemoNotFoundException;
 import com.imroze.twitterdemo.exceptions.TwitterDemoUnauthorizedException;
+import com.imroze.twitterdemo.userauth.UserDataRepository;
 import com.imroze.twitterdemo.userauth.data.Role;
+import com.imroze.twitterdemo.userauth.data.SessionStatus;
 import com.imroze.twitterdemo.utility.JWTUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -23,6 +26,8 @@ import reactor.core.publisher.Mono;
 public class AuthenticationManager implements ReactiveAuthenticationManager {
 
   @Autowired private JWTUtil jwtUtil;
+
+  @Autowired private UserDataRepository userDataRepository;
 
   @Override
   @SuppressWarnings("unchecked")
@@ -64,7 +69,7 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
           && role != null
           && userName != null
           && email != null
-          && (role.equals(Role.USER.name()))
+          && (role.equals(Role.ROLE_USER.name()))
           && jwtUtil.validateToken(authToken)) {
 
         List<Role> roles = new ArrayList<>();
@@ -76,31 +81,50 @@ public class AuthenticationManager implements ReactiveAuthenticationManager {
                 roles.stream()
                     .map(authority -> new SimpleGrantedAuthority(authority.name()))
                     .collect(Collectors.toList()));
+
         return Mono.just(auth);
+
       } else {
-        // the compiler comes in here when the token is invalid
         return Mono.error(
             () ->
                 new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
-                    "Your session has been expired!",
+                    "Access Denied!",
                     new TwitterDemoUnauthorizedException()));
       }
     } catch (ExpiredJwtException e) {
-      // The compiler comes here when the token get expired
+
+      return userDataRepository
+          .findUserDataByEmail(e.getClaims().get("email").toString())
+          .filter(userData -> userData.getSessionStatus().equals(SessionStatus.ACTIVE))
+          .switchIfEmpty(
+              Mono.error(
+                  () ->
+                      new ResponseStatusException(
+                          HttpStatus.UNAUTHORIZED,
+                          "Your session has been expired!",
+                          new TwitterDemoUnauthorizedException())))
+          .flatMap(
+              userData -> {
+                userData.setSessionStatus(SessionStatus.INACTIVE);
+                return userDataRepository.save(userData);
+              })
+          .flatMap(
+              userData ->
+                  Mono.error(
+                      () ->
+                          new ResponseStatusException(
+                              HttpStatus.UNAUTHORIZED,
+                              "Your session has been expired!",
+                              new TwitterDemoUnauthorizedException())));
+
+    } catch (MalformedJwtException | SignatureException e) {
       return Mono.error(
           () ->
               new ResponseStatusException(
                   HttpStatus.UNAUTHORIZED,
-                  "Your session has been expired!",
+                  "Invalid Token",
                   new TwitterDemoUnauthorizedException()));
-    } catch (MalformedJwtException | SignatureException e) {
-      // The compiler comes here when the token is Malformed
-      return Mono.error(
-          () ->
-              new ResponseStatusException(
-                  HttpStatus.UNAUTHORIZED, "Invalid Token", new TwitterDemoUnauthorizedException()));
-    } // The compiler comes here when the token has an invalid signature
-
+    }
   }
 }

@@ -1,7 +1,11 @@
 package com.imroze.twitterdemo.securityconfig;
 
+import com.imroze.twitterdemo.exceptions.TwitterDemoNotFoundException;
 import com.imroze.twitterdemo.exceptions.TwitterDemoUnauthorizedException;
+import com.imroze.twitterdemo.userauth.UserDataRepository;
+import com.imroze.twitterdemo.userauth.data.SessionStatus;
 import com.imroze.twitterdemo.utility.JWTUtil;
+import io.jsonwebtoken.ExpiredJwtException;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -26,6 +30,8 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
 
   @Autowired private JWTUtil jwtUtil;
 
+  @Autowired private UserDataRepository userDataRepository;
+
   @Override
   public Mono<Void> save(ServerWebExchange swe, SecurityContext sc) {
     throw new TwitterDemoUnauthorizedException("Un-Authorized!");
@@ -41,7 +47,37 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
     PathPattern.PathRemainingMatchInfo pathRemainingMatchInfo =
         pathPattern.matchStartOfPath(request.getPath().pathWithinApplication());
 
-    if (authHeader != null) {
+    if (authHeader != null ) {
+
+        try{
+          jwtUtil.getEmail(authHeader);
+        }
+        catch (ExpiredJwtException e) {
+          return userDataRepository
+              .findUserDataByEmail(e.getClaims().get("email").toString())
+              .filter(userData -> userData.getSessionStatus().equals(SessionStatus.ACTIVE))
+              .switchIfEmpty(
+                  Mono.error(
+                      () ->
+                          new ResponseStatusException(
+                              HttpStatus.UNAUTHORIZED,
+                              "Your session has been expired!",
+                              new TwitterDemoUnauthorizedException())))
+              .flatMap(
+                  userData -> {
+                    userData.setSessionStatus(SessionStatus.INACTIVE);
+                    return userDataRepository.save(userData);
+                  })
+              .flatMap(
+                  userData ->
+                      Mono.error(
+                          () ->
+                              new ResponseStatusException(
+                                  HttpStatus.UNAUTHORIZED,
+                                  "Your session has been expired!",
+                                  new TwitterDemoUnauthorizedException())));
+        }
+
 
       if (pathRemainingMatchInfo != null
           && pathRemainingMatchInfo.getPathRemaining() != null
@@ -56,7 +92,24 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
         }
         else {
           Authentication auth = new UsernamePasswordAuthenticationToken(authHeader, authHeader);
-          return this.authenticationManager.authenticate(auth).map(SecurityContextImpl::new);
+
+          return userDataRepository
+            .findById(userName)
+            .switchIfEmpty(
+                Mono.error(
+                    new TwitterDemoNotFoundException(new RuntimeException(), "User doesn't exist")))
+            .filter(userData -> userData.getSessionStatus().name().equals(SessionStatus.ACTIVE.name()))
+            .switchIfEmpty(
+                Mono.error(
+                    new TwitterDemoUnauthorizedException(
+                        new RuntimeException(), "You've logged out!")))
+            .flatMap(userData -> authenticationManager
+              .authenticate(auth)
+              .map(authentication -> new SecurityContextImpl(authentication)));
+
+          /*return authenticationManager
+              .authenticate(auth)
+              .map(authentication -> new SecurityContextImpl(authentication));*/
         }
       }
       else {

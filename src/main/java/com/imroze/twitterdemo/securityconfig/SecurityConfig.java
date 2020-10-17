@@ -25,49 +25,42 @@ import reactor.core.publisher.Mono;
 @EnableReactiveMethodSecurity
 public class SecurityConfig {
 
-  @Autowired
-  private
-  SecurityContextRepository securityContextRepository;
+  @Autowired private SecurityContextRepository securityContextRepository;
 
-  @Autowired
-  private
-  AuthenticationManager authenticationManager;
+  @Autowired private AuthenticationManager authenticationManager;
 
   @Bean
   public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
 
-    http
-        .exceptionHandling()
-        .authenticationEntryPoint(new ServerAuthenticationEntryPoint() {
-          @Override
-          public Mono<Void> commence(ServerWebExchange swe, AuthenticationException e) {
-            return Mono.fromRunnable(new Runnable() {
-              @Override
-              public void run() {
-                swe.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
-              }
-            });
-          }
-        }).accessDeniedHandler(new ServerAccessDeniedHandler() {
-      @Override
-      public Mono<Void> handle(ServerWebExchange swe, AccessDeniedException e) {
-        return Mono.fromRunnable(new Runnable() {
-          @Override
-          public void run() {
-            swe.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
-          }
-        });
-      }
-    }).and()
-        .csrf().disable()
-        .httpBasic().disable()
-        .formLogin().disable()
+    http.exceptionHandling()
+        .authenticationEntryPoint(
+            (swe, e) ->
+                Mono.fromRunnable(
+                    () -> {
+                      swe.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+                    }))
+        .accessDeniedHandler(
+            (swe, e) ->
+                Mono.fromRunnable(
+                    () -> {
+                      swe.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+                    }))
+        .and()
+        .csrf()
+        .disable()
+        .httpBasic()
+        .disable()
+        .formLogin()
+        .disable()
         .authenticationManager(authenticationManager)
         .securityContextRepository(securityContextRepository)
         .authorizeExchange()
-        .pathMatchers(HttpMethod.OPTIONS).permitAll()
-        .pathMatchers("/auth/**").permitAll()
-        .anyExchange().authenticated();
+        .pathMatchers(HttpMethod.OPTIONS)
+        .permitAll()
+        .pathMatchers("/auth/**")
+        .permitAll()
+        .anyExchange()
+        .authenticated();
 
     http.cors();
 
@@ -78,13 +71,13 @@ public class SecurityConfig {
   public CorsConfigurationSource corsConfigurationSource() {
     final CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowedOrigins(ImmutableList.of("*"));
-    configuration.setAllowedMethods(ImmutableList.of("HEAD",
-        "GET", "POST", "PUT", "DELETE", "PATCH"));
+    configuration.setAllowedMethods(
+        ImmutableList.of("HEAD", "GET", "POST", "PUT", "DELETE", "PATCH"));
     configuration.setAllowCredentials(true);
-    configuration.setAllowedHeaders(ImmutableList.of("Authorization", "Cache-Control", "Content-Type"));
+    configuration.setAllowedHeaders(
+        ImmutableList.of("Authorization", "Cache-Control", "Content-Type"));
     final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
     source.registerCorsConfiguration("/**", configuration);
     return source;
   }
-
 }

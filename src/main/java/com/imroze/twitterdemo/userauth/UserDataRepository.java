@@ -7,9 +7,13 @@ import org.springframework.stereotype.Repository;
 import reactor.core.publisher.Mono;
 
 @Repository
-interface UserDataRepository extends ReactiveMongoRepository<UserData, String> {
+public interface UserDataRepository extends ReactiveMongoRepository<UserData, String> {
 
   Mono<UserData> findUserDataByEmail(@Param("email") String email);
 
   Mono<UserData> findUserDataByNumber(@Param("number") String number);
+
+  Mono<Boolean> existsUserDataByEmail(@Param("email") String email);
+
+  Mono<Boolean> existsUserDataByNumber(@Param("number") String number);
 }

@@ -28,38 +28,54 @@ public class AuthService {
 
   public Mono<LoginResponse> registerUser(UserRegistrationData userRegistrationData) {
 
-    return userDataRepository.existsById(userRegistrationData.getUserName())
-        .filter(aBoolean -> !aBoolean)
-        .switchIfEmpty(Mono.error(()-> new TwitterDemoClientException("UserName Already Exist")))
-        .flatMap(aBoolean -> {
-          UserData userData = new UserData();
-          userData.setUserName(userRegistrationData.getUserName());
-          userData.setEmail(userRegistrationData.getEmail());
-          userData.setNumber(userRegistrationData.getNumber());
-          userData.setName(userRegistrationData.getName());
-          userData.setRecoveryEmail(userRegistrationData.getRecoveryEmail());
-          userData.setProfilePictureUrl(userRegistrationData.getProfilePictureUrl());
-          userData.setPassword(bCryptPasswordEncoder.encode(userRegistrationData.getPassword()));
-          userData.setSessionStatus(
-              userRegistrationData.getRegistrationType() == RegistrationType.LOGIN
-                  ? SessionStatus.ACTIVE
-                  : SessionStatus.INACTIVE);
+    return Mono.zip(
+            userDataRepository
+                .existsById(userRegistrationData.getUserName())
+                .filter(aBoolean -> !aBoolean)
+                .switchIfEmpty(
+                    Mono.error(() -> new TwitterDemoClientException("UserName Already Exist"))),
+            userDataRepository
+                .existsUserDataByEmail(userRegistrationData.getEmail())
+                .filter(aBoolean -> !aBoolean)
+                .switchIfEmpty(
+                    Mono.error(() -> new TwitterDemoClientException("Email Already Exist"))),
+            userDataRepository
+                .existsUserDataByNumber(userRegistrationData.getNumber())
+                .filter(aBoolean -> !aBoolean)
+                .switchIfEmpty(
+                    Mono.error(() -> new TwitterDemoClientException("Phone number Already Exist"))))
+        .flatMap(
+            objects -> {
+              UserData userData = new UserData();
+              userData.setUserName(userRegistrationData.getUserName());
+              userData.setEmail(userRegistrationData.getEmail());
+              userData.setNumber(userRegistrationData.getNumber());
+              userData.setName(userRegistrationData.getName());
+              userData.setRecoveryEmail(userRegistrationData.getRecoveryEmail());
+              userData.setProfilePictureUrl(userRegistrationData.getProfilePictureUrl());
+              userData.setPassword(
+                  bCryptPasswordEncoder.encode(userRegistrationData.getPassword()));
+              userData.setSessionStatus(
+                  userRegistrationData.getRegistrationType() == RegistrationType.LOGIN
+                      ? SessionStatus.ACTIVE
+                      : SessionStatus.INACTIVE);
 
-          return userDataRepository
-              .save(userData)
-              .map(
-                  userData1 ->
-                      LoginResponse.builder()
-                          .token(
-                              userRegistrationData.getRegistrationType() == RegistrationType.LOGIN
-                                  ? jwtUtil.generateToken(
-                                  Role.USER,
-                                  userData.getUserName(),
-                                  userData.getEmail(),
-                                  userData.getNumber())
-                                  : null)
-                          .build());
-        });
+              return userDataRepository
+                  .save(userData)
+                  .map(
+                      userData1 ->
+                          LoginResponse.builder()
+                              .token(
+                                  userRegistrationData.getRegistrationType()
+                                          == RegistrationType.LOGIN
+                                      ? jwtUtil.generateToken(
+                                          Role.ROLE_USER,
+                                          userData.getUserName(),
+                                          userData.getEmail(),
+                                          userData.getNumber())
+                                      : null)
+                              .build());
+            });
   }
 
   public Mono<LoginResponse> login(LoginRequest loginRequest) {
@@ -92,7 +108,7 @@ public class AuthService {
                     LoginResponse.builder()
                         .token(
                             jwtUtil.generateToken(
-                                Role.USER,
+                                Role.ROLE_USER,
                                 userData.getUserName(),
                                 userData.getEmail(),
                                 userData.getNumber()))
@@ -124,7 +140,7 @@ public class AuthService {
                     LoginResponse.builder()
                         .token(
                             jwtUtil.generateToken(
-                                Role.USER,
+                                Role.ROLE_USER,
                                 userData.getUserName(),
                                 userData.getEmail(),
                                 userData.getNumber()))
@@ -156,7 +172,7 @@ public class AuthService {
                     LoginResponse.builder()
                         .token(
                             jwtUtil.generateToken(
-                                Role.USER,
+                                Role.ROLE_USER,
                                 userData.getUserName(),
                                 userData.getEmail(),
                                 userData.getNumber()))
