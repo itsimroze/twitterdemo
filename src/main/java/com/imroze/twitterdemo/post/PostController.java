@@ -7,6 +7,7 @@ import com.imroze.twitterdemo.post.data.Post;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -51,5 +52,10 @@ public class PostController {
       @PathVariable("commentId") String commentId,
       @RequestBody Like like) {
     return postService.likeComment(username, postId, commentId, like);
+  }
+
+  @GetMapping("/{username}/post/{postId}")
+  public Mono<Post> getPost(@PathVariable("postId") String postId) {
+    return postService.getPost(postId);
   }
 }

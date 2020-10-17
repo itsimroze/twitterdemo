@@ -15,4 +15,6 @@ public interface PostService {
   Mono<String> commentPost(String username, String postId, Comment comment);
 
   Mono<String> likeComment(String username, String postId, String commentId, Like like);
+
+  Mono<Post> getPost(String postId);
 }

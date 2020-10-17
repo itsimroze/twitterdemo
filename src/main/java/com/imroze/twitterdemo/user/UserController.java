@@ -1,10 +1,11 @@
 package com.imroze.twitterdemo.user;
 
+import com.imroze.twitterdemo.auth.data.FollowStatus;
 import com.imroze.twitterdemo.user.data.SearchData;
 import com.imroze.twitterdemo.user.data.SearchRequest;
 import com.imroze.twitterdemo.user.data.UserDetails;
+import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.lang.NonNull;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import java.util.List;
 
 @RestController
 @RequestMapping("/demo/v1.0/user")
@@ -41,5 +41,10 @@ public class UserController {
       @PathVariable("username") String username,
       @PathVariable("followUserName") String followName) {
     return userService.followUser(username, followName);
+  }
+
+  @GetMapping("/{username}/follow")
+  public Mono<HashMap<String, FollowStatus>> getFollowList(@PathVariable("username") String username) {
+    return userService.getFollower(username);
   }
 }

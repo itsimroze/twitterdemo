@@ -92,14 +92,25 @@ public class PostServiceImpl implements PostService {
             Mono.error(
                 new TwitterDemoNotFoundException(
                     new RuntimeException(), "Post might have been deleted")))
-        .flatMap(post -> Flux.fromIterable(post.getComments())
-            .filter(comment -> comment.getCommentId().equals(commentId))
-            .take(1)
-            .next()
-            .flatMap(comment -> {
-              comment.getLikes().add(like);
-              return postRepository.save(post).map(post1 -> like.getReactType().name());
-            })
-        );
+        .flatMap(
+            post ->
+                Flux.fromIterable(post.getComments())
+                    .filter(comment -> comment.getCommentId().equals(commentId))
+                    .take(1)
+                    .next()
+                    .flatMap(
+                        comment -> {
+                          comment.getLikes().add(like);
+                          return postRepository.save(post).map(post1 -> like.getReactType().name());
+                        }));
+  }
+
+  @Override
+  public Mono<Post> getPost(String postId) {
+    return postRepository
+        .findById(postId)
+        .switchIfEmpty(
+            Mono.error(
+                new TwitterDemoNotFoundException(new RuntimeException(), "Post not found!")));
   }
 }

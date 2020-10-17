@@ -1,12 +1,14 @@
 package com.imroze.twitterdemo.user;
 
 import com.imroze.twitterdemo.auth.data.FollowStatus;
+import com.imroze.twitterdemo.auth.data.UserData;
 import com.imroze.twitterdemo.exceptions.TwitterDemoNotFoundException;
 import com.imroze.twitterdemo.user.data.SearchData;
 import com.imroze.twitterdemo.user.data.SearchRequest;
 import com.imroze.twitterdemo.user.data.UserDetails;
 import com.imroze.twitterdemo.auth.UserDataRepository;
 import java.util.Arrays;
+import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -116,5 +118,11 @@ public class UserServiceImpl implements UserService {
                             .map(userData1 -> userData.getFollowers().get(followName).name());
                       });
             });
+  }
+
+  @Override
+  public Mono<HashMap<String, FollowStatus>> getFollower(String username) {
+    return userDataRepository.findById(username)
+        .map(UserData::getFollowers);
   }
 }
