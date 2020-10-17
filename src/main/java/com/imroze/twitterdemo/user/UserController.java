@@ -17,9 +17,9 @@ public class UserController {
 
   @GetMapping("/{username}")
   @PreAuthorize("hasRole('USER')")
-  public Mono<UserDetails> getUserDetails(
-      @PathVariable("username") String username
-  ) {
+  public Mono<UserDetails> getUserDetails(@PathVariable("username") String username) {
     return userService.getUserDetails(username);
   }
+
+
 }
