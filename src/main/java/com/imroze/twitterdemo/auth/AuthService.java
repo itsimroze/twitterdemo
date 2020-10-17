@@ -28,6 +28,12 @@ public class AuthService {
 
   public Mono<LoginResponse> registerUser(UserRegistrationData userRegistrationData) {
 
+    if (!userRegistrationData.getUserName().matches("^[a-zA-Z0-9]{4,20}$")) {
+      return Mono.error(
+          new TwitterDemoClientException(
+              new RuntimeException(), "User shall not contains any special characters"));
+    }
+
     return Mono.zip(
             userDataRepository
                 .existsById(userRegistrationData.getUserName())

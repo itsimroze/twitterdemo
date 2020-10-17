@@ -19,6 +19,6 @@ public class UserData {
   private String password;
   private String recoveryEmail;
   private String profilePictureUrl;
-  private HashMap<String, FollowStatus> followers;
+  private HashMap<String, FollowStatus> followers = new HashMap<>();
   private SessionStatus sessionStatus;
 }

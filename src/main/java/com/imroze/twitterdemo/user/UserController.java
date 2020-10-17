@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,5 +32,12 @@ public class UserController {
   @PostMapping("/{username}/search")
   public Flux<SearchData> getUserNames(@RequestBody SearchRequest searchRequest) {
     return userService.searchUser(searchRequest);
+  }
+
+  @PutMapping("/{username}/follow/{followUserName}")
+  public Mono<String> followUser(
+      @PathVariable("username") String username,
+      @PathVariable("followUserName") String followName) {
+    return userService.followUser(username, followName);
   }
 }

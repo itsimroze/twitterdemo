@@ -11,4 +11,6 @@ public interface UserService {
   Mono<UserDetails> getUserDetails(String username);
 
   Flux<SearchData> searchUser(SearchRequest keyWord);
+
+  Mono<String> followUser(String username, String followName);
 }
