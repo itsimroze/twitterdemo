@@ -1,4 +1,4 @@
-package com.imroze.twitterdemo.userauth.data;
+package com.imroze.twitterdemo.auth.data;
 
 public enum Role {
   ROLE_ADMIN, ROLE_USER

@@ -1,6 +1,6 @@
 package com.imroze.twitterdemo.utility;
 
-import com.imroze.twitterdemo.userauth.data.Role;
+import com.imroze.twitterdemo.auth.data.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

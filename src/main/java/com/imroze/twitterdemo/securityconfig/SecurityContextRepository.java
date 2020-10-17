@@ -1,12 +1,10 @@
 package com.imroze.twitterdemo.securityconfig;
 
-import com.imroze.twitterdemo.exceptions.TwitterDemoNotFoundException;
 import com.imroze.twitterdemo.exceptions.TwitterDemoUnauthorizedException;
-import com.imroze.twitterdemo.userauth.UserDataRepository;
-import com.imroze.twitterdemo.userauth.data.SessionStatus;
+import com.imroze.twitterdemo.auth.UserDataRepository;
+import com.imroze.twitterdemo.auth.data.SessionStatus;
 import com.imroze.twitterdemo.utility.JWTUtil;
 import io.jsonwebtoken.ExpiredJwtException;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

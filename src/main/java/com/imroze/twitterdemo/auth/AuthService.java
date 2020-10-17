@@ -1,15 +1,15 @@
-package com.imroze.twitterdemo.userauth;
+package com.imroze.twitterdemo.auth;
 
 import com.imroze.twitterdemo.exceptions.TwitterDemoClientException;
 import com.imroze.twitterdemo.exceptions.TwitterDemoNotFoundException;
 import com.imroze.twitterdemo.exceptions.TwitterDemoUnauthorizedException;
-import com.imroze.twitterdemo.userauth.data.RegistrationType;
-import com.imroze.twitterdemo.userauth.data.Role;
-import com.imroze.twitterdemo.userauth.data.SessionStatus;
-import com.imroze.twitterdemo.userauth.data.UserData;
-import com.imroze.twitterdemo.userauth.data.request.LoginRequest;
-import com.imroze.twitterdemo.userauth.data.request.UserRegistrationData;
-import com.imroze.twitterdemo.userauth.data.response.LoginResponse;
+import com.imroze.twitterdemo.auth.data.RegistrationType;
+import com.imroze.twitterdemo.auth.data.Role;
+import com.imroze.twitterdemo.auth.data.SessionStatus;
+import com.imroze.twitterdemo.auth.data.UserData;
+import com.imroze.twitterdemo.auth.data.request.LoginRequest;
+import com.imroze.twitterdemo.auth.data.request.UserRegistrationData;
+import com.imroze.twitterdemo.auth.data.response.LoginResponse;
 import com.imroze.twitterdemo.utility.JWTUtil;
 import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;

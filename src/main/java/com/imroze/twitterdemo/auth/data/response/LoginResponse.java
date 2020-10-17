@@ -1,4 +1,4 @@
-package com.imroze.twitterdemo.userauth.data.response;
+package com.imroze.twitterdemo.auth.data.response;
 
 import lombok.Builder;
 import lombok.Data;

@@ -1,10 +1,9 @@
 package com.imroze.twitterdemo.securityconfig;
 
-import com.imroze.twitterdemo.exceptions.TwitterDemoNotFoundException;
 import com.imroze.twitterdemo.exceptions.TwitterDemoUnauthorizedException;
-import com.imroze.twitterdemo.userauth.UserDataRepository;
-import com.imroze.twitterdemo.userauth.data.Role;
-import com.imroze.twitterdemo.userauth.data.SessionStatus;
+import com.imroze.twitterdemo.auth.UserDataRepository;
+import com.imroze.twitterdemo.auth.data.Role;
+import com.imroze.twitterdemo.auth.data.SessionStatus;
 import com.imroze.twitterdemo.utility.JWTUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;

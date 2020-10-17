@@ -1,6 +1,6 @@
-package com.imroze.twitterdemo.userauth.data.request;
+package com.imroze.twitterdemo.auth.data.request;
 
-import com.imroze.twitterdemo.userauth.data.RegistrationType;
+import com.imroze.twitterdemo.auth.data.RegistrationType;
 import lombok.Data;
 import org.springframework.lang.NonNull;
 

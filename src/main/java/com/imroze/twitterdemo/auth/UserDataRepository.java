@@ -1,6 +1,6 @@
-package com.imroze.twitterdemo.userauth;
+package com.imroze.twitterdemo.auth;
 
-import com.imroze.twitterdemo.userauth.data.UserData;
+import com.imroze.twitterdemo.auth.data.UserData;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;

@@ -1,9 +1,13 @@
 package com.imroze.twitterdemo.user;
 
+import com.imroze.twitterdemo.exceptions.TwitterDemoNotFoundException;
+import com.imroze.twitterdemo.user.data.SearchData;
+import com.imroze.twitterdemo.user.data.SearchRequest;
 import com.imroze.twitterdemo.user.data.UserDetails;
-import com.imroze.twitterdemo.userauth.UserDataRepository;
+import com.imroze.twitterdemo.auth.UserDataRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -24,5 +28,46 @@ public class UserServiceImpl implements UserService {
                     .recoveryEmail(userData.getRecoveryEmail())
                     .username(userData.getUserName())
                     .build());
+  }
+
+  @Override
+  public Flux<SearchData> searchUser(SearchRequest searchRequest) {
+
+    switch (searchRequest.getSearchType()) {
+      case NAME:
+        return userDataRepository
+            .findAll()
+            .filter(userData -> userData.getName().startsWith(searchRequest.getKeyword()))
+            .switchIfEmpty(
+                Flux.error(
+                    () ->
+                        new TwitterDemoNotFoundException(new RuntimeException(), "No user found!")))
+            .map(
+                userData ->
+                    SearchData.builder()
+                        .name(userData.getName())
+                        .username(userData.getUserName())
+                        .profilePictureUrl(userData.getProfilePictureUrl())
+                        .build());
+      case USERNAME:
+        return userDataRepository
+            .findAll()
+            .filter(userData -> userData.getUserName().startsWith(searchRequest.getKeyword()))
+            .switchIfEmpty(
+                Flux.error(
+                    () ->
+                        new TwitterDemoNotFoundException(new RuntimeException(), "No user found!")))
+            .map(
+                userData ->
+                    SearchData.builder()
+                        .name(userData.getName())
+                        .username(userData.getUserName())
+                        .profilePictureUrl(userData.getProfilePictureUrl())
+                        .build());
+
+      default:
+        return Flux.error(
+            () -> new TwitterDemoNotFoundException(new RuntimeException(), "No user found!"));
+    }
   }
 }

@@ -1,8 +1,8 @@
-package com.imroze.twitterdemo.userauth;
+package com.imroze.twitterdemo.auth;
 
-import com.imroze.twitterdemo.userauth.data.request.LoginRequest;
-import com.imroze.twitterdemo.userauth.data.request.UserRegistrationData;
-import com.imroze.twitterdemo.userauth.data.response.LoginResponse;
+import com.imroze.twitterdemo.auth.data.request.LoginRequest;
+import com.imroze.twitterdemo.auth.data.request.UserRegistrationData;
+import com.imroze.twitterdemo.auth.data.response.LoginResponse;
 import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
