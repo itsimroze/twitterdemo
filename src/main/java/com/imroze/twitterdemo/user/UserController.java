@@ -30,11 +30,13 @@ public class UserController {
   }
 
   @PostMapping("/{username}/search")
+  @PreAuthorize("hasRole('USER')")
   public Flux<SearchData> getUserNames(@RequestBody SearchRequest searchRequest) {
     return userService.searchUser(searchRequest);
   }
 
   @PutMapping("/{username}/follow/{followUserName}")
+  @PreAuthorize("hasRole('USER')")
   public Mono<String> followUser(
       @PathVariable("username") String username,
       @PathVariable("followUserName") String followName) {

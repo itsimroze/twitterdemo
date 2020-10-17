@@ -6,6 +6,7 @@ import java.util.List;
 
 @Data
 public class Comment {
+  private String commentId;
   private String username;
   private String text;
   private List<Like> likes;
