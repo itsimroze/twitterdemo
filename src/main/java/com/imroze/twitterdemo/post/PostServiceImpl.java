@@ -6,6 +6,8 @@ import com.imroze.twitterdemo.post.data.BasicPostRequest;
 import com.imroze.twitterdemo.post.data.Comment;
 import com.imroze.twitterdemo.post.data.Like;
 import com.imroze.twitterdemo.post.data.Post;
+import com.imroze.twitterdemo.stream.PostCappedRepository;
+import com.imroze.twitterdemo.stream.data.PostCapped;
 import com.imroze.twitterdemo.utility.CommonUtils;
 import java.util.ArrayList;
 import java.util.Date;
@@ -19,6 +21,8 @@ public class PostServiceImpl implements PostService {
 
   @Autowired private PostRepository postRepository;
 
+  @Autowired private PostCappedRepository postCappedRepository;
+
   @Override
   public Mono<Post> createPost(String username, BasicPostRequest basicPostRequest) {
 
@@ -29,16 +33,31 @@ public class PostServiceImpl implements PostService {
                   new IllegalStateException(), "Post is out of text limit."));
     }
 
-    return postRepository.save(
-        Post.builder()
-            .username(username)
-            .createdAt(new Date())
-            .location(basicPostRequest.getLocation())
-            .postId(CommonUtils.generateUUID())
-            .text(basicPostRequest.getText())
-            .comments(new ArrayList<>())
-            .likes(new ArrayList<>())
-            .build());
+    return postRepository
+        .save(
+            Post.builder()
+                .username(username)
+                .createdAt(new Date())
+                .location(basicPostRequest.getLocation())
+                .postId(CommonUtils.generateUUID())
+                .text(basicPostRequest.getText())
+                .comments(new ArrayList<>())
+                .likes(new ArrayList<>())
+                .build())
+        .flatMap(
+            post ->
+                postCappedRepository
+                    .save(
+                        PostCapped.builder()
+                            .username(post.getUsername())
+                            .createdAt(post.getCreatedAt())
+                            .location(post.getLocation())
+                            .postId(post.getPostId())
+                            .text(basicPostRequest.getText())
+                            .comments(new ArrayList<>())
+                            .likes(new ArrayList<>())
+                            .build())
+                    .map(postCapped -> post));
   }
 
   @Override

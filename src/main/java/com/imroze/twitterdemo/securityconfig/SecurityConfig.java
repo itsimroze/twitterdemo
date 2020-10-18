@@ -57,7 +57,7 @@ public class SecurityConfig {
         .authorizeExchange()
         .pathMatchers(HttpMethod.OPTIONS)
         .permitAll()
-        .pathMatchers("/auth/**")
+        .pathMatchers("/auth/**", "/demo/v1.0/stream/**")
         .permitAll()
         .anyExchange()
         .authenticated();
