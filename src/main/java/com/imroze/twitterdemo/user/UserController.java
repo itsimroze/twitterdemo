@@ -29,6 +29,12 @@ public class UserController {
     return userService.getUserDetails(username);
   }
 
+  @GetMapping("/{username}/following/{followingUsername}")
+  @PreAuthorize("hasRole('USER')")
+  public Mono<UserDetails> getFollowingUserDetails(@PathVariable("followingUsername") String username) {
+    return userService.getUserDetails(username);
+  }
+
   @PostMapping("/{username}/search")
   @PreAuthorize("hasRole('USER')")
   public Flux<SearchData> getUserNames(@RequestBody SearchRequest searchRequest) {

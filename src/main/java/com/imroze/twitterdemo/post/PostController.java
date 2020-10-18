@@ -4,6 +4,7 @@ import com.imroze.twitterdemo.post.data.BasicPostRequest;
 import com.imroze.twitterdemo.post.data.Comment;
 import com.imroze.twitterdemo.post.data.Like;
 import com.imroze.twitterdemo.post.data.Post;
+import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -61,5 +62,14 @@ public class PostController {
   @PreAuthorize("hasRole('USER')")
   public Mono<Post> getPost(@PathVariable("postId") String postId) {
     return postService.getPost(postId);
+  }
+
+  @GetMapping("/{username}/following/{followingUser}/page/{page}/post")
+  @PreAuthorize("hasRole('USER')")
+  public Mono<HashMap<String, Object>> getPostFromUser(
+      @PathVariable("username") String username,
+      @PathVariable("followingUser") String followingUser,
+      @PathVariable("page") Long page) {
+    return postService.getPostsForFollowingUser(username, followingUser, page);
   }
 }

@@ -1,5 +1,6 @@
 package com.imroze.twitterdemo.post;
 
+import com.imroze.twitterdemo.auth.UserDataRepository;
 import com.imroze.twitterdemo.exceptions.TwitterDemoClientException;
 import com.imroze.twitterdemo.exceptions.TwitterDemoNotFoundException;
 import com.imroze.twitterdemo.post.data.BasicPostRequest;
@@ -10,7 +11,10 @@ import com.imroze.twitterdemo.stream.PostCappedRepository;
 import com.imroze.twitterdemo.stream.data.PostCapped;
 import com.imroze.twitterdemo.utility.CommonUtils;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -22,6 +26,8 @@ public class PostServiceImpl implements PostService {
   @Autowired private PostRepository postRepository;
 
   @Autowired private PostCappedRepository postCappedRepository;
+
+  @Autowired private UserDataRepository userDataRepository;
 
   @Override
   public Mono<Post> createPost(String username, BasicPostRequest basicPostRequest) {
@@ -131,5 +137,33 @@ public class PostServiceImpl implements PostService {
         .switchIfEmpty(
             Mono.error(
                 new TwitterDemoNotFoundException(new RuntimeException(), "Post not found!")));
+  }
+
+  @Override
+  public Mono<HashMap<String, Object>> getPostsForFollowingUser(
+      String username, String followingUser, Long page) {
+    return userDataRepository
+        .findById(followingUser)
+        .flatMap(
+            userData ->
+                postRepository
+                    .countByUsername(followingUser)
+                    .flatMap(
+                        aLong ->
+                            postRepository
+                                .findByUsername(followingUser)
+                                .sort(Comparator.comparing(Post::getCreatedAt).reversed())
+                                .skip((page - 1) * 20)
+                                .take(20)
+                                .collectList()
+                                .map(
+                                    posts -> {
+                                      HashMap<String, Object> response = new HashMap<>();
+                                      response.put(
+                                          "totalPage", (aLong % 20) == 0 ? aLong / 20 : aLong/20 + 1);
+                                      response.put("data", posts);
+                                      response.put("currentPage", page);
+                                      return response;
+                                    })));
   }
 }
